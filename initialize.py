@@ -118,6 +118,7 @@ def initialize_agent_executor():
     # 各Tool用のChainを作成
     st.session_state.customer_doc_chain = utils.create_rag_chain(ct.DB_CUSTOMER_PATH)
     st.session_state.service_doc_chain = utils.create_rag_chain(ct.DB_SERVICE_PATH)
+    st.session_state.product_doc_chain = utils.create_rag_chain(ct.DB_SERVICE_PATH)          # 問題1対応 商品検索用RAGchainの用意
     st.session_state.company_doc_chain = utils.create_rag_chain(ct.DB_COMPANY_PATH)
     st.session_state.rag_chain = utils.create_rag_chain(ct.DB_ALL_PATH)
 
@@ -136,6 +137,12 @@ def initialize_agent_executor():
             name=ct.SEARCH_SERVICE_INFO_TOOL_NAME,
             func=utils.run_service_doc_chain,
             description=ct.SEARCH_SERVICE_INFO_TOOL_DESCRIPTION
+        ),
+        # 株式会社EcoTeeで製造・販売している商品の検索用のTool          # 問題1対応 商品情報が検索できるようにするToolの追加（サービスに対するデータ検索では個々の商品情報が検索されないため）
+        Tool(
+            name=ct.SEARCH_PRODUCT_INFO_TOOL_NAME,
+            func=utils.run_product_doc_chain,
+            description=ct.SEARCH_PRODUCT_INFO_TOOL_DESCRIPTION
         ),
         # 顧客とのやり取りに関するデータ検索用のTool
         Tool(

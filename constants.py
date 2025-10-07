@@ -61,7 +61,7 @@ LOG_FILE = "application.log"
 # ==========================================
 MODEL = "gpt-4o-mini"
 TEMPERATURE = 0.5
-CHUNK_SIZE = 500
+CHUNK_SIZE = 1000       # 検索されないケースが多かったので500->1000に変更
 CHUNK_OVERLAP = 50
 TOP_K = 5
 RETRIEVER_WEIGHTS = [0.5, 0.5]
@@ -113,11 +113,12 @@ SEARCH_COMPANY_INFO_TOOL_NAME = "search_company_info_tool"
 SEARCH_COMPANY_INFO_TOOL_DESCRIPTION = "自社「株式会社EcoTee」に関する情報を参照したい時に使う"
 SEARCH_SERVICE_INFO_TOOL_NAME = "search_service_info_tool"
 SEARCH_SERVICE_INFO_TOOL_DESCRIPTION = "自社サービス「EcoTee」に関する情報を参照したい時に使う"
+SEARCH_PRODUCT_INFO_TOOL_NAME = "search_product_info_tool"                                             # 問題1対応 Toolの追加
+SEARCH_PRODUCT_INFO_TOOL_DESCRIPTION = "株式会社EcoTeeで製造・販売している商品の情報を参照したい時に使う"   # 問題1対応 Toolの追加
 SEARCH_CUSTOMER_COMMUNICATION_INFO_TOOL_NAME = "search_customer_communication_tool"
 SEARCH_CUSTOMER_COMMUNICATION_INFO_TOOL_DESCRIPTION = "顧客とのやりとりに関する情報を参照したい時に使う"
 SEARCH_WEB_INFO_TOOL_NAME = "search_web_tool"
 SEARCH_WEB_INFO_TOOL_DESCRIPTION = "自社サービス「HealthX」に関する質問で、Web検索が必要と判断した場合に使う"
-
 
 # ==========================================
 # Slack連携関連
@@ -150,6 +151,7 @@ SYSTEM_PROMPT_INQUIRY = """
     {context}
 """
 
+# 問題２対応 - 従業員選定用プロンプトテンプレート
 SYSTEM_PROMPT_EMPLOYEE_SELECTION = """
     # 命令
     以下の「顧客からの問い合わせ」に対して、社内のどの従業員が対応するかを
@@ -178,7 +180,7 @@ SYSTEM_PROMPT_EMPLOYEE_SELECTION = """
     # 出力フォーマット
     {format_instruction}
 """
-
+# 問題2対応 - Slack通知用システムプロンプトに【メンション先の選定理由】欄を追加
 SYSTEM_PROMPT_NOTICE_SLACK = """
     # 役割
     具体的で分量の多いメッセージの作成と、指定のメンバーにメンションを当ててSlackへの送信を行うアシスタント
@@ -213,9 +215,15 @@ SYSTEM_PROMPT_NOTICE_SLACK = """
 
     - 【問い合わせ情報】の「カテゴリ」は、【問い合わせ情報】の「問い合わせ内容」を基に適切なものを生成してください。
 
+    - 【メンション先の選定理由】について、以下の条件にしたがって生成してください。
+        - メンション先の選定理由は、メンションを当てたメンバーがなぜこの問い合わせに対応すべきかを説明してください。
+        - メンション先の選定理由は、以下の観点を含めてください。
+            - 過去の問い合わせ対応履歴
+            - 対応可能な問い合わせカテゴリ
+            - 現在の主要業務
+
     - 【回答・対応案】について、以下の条件に従って生成してください。
         - 回答・対応案の内容と、それが良いと判断した根拠を、それぞれ3つずつ生成してください。
-
 
     # 顧客から弊社への問い合わせ内容
     {query}
@@ -237,6 +245,9 @@ SYSTEM_PROMPT_NOTICE_SLACK = """
     ・問い合わせ者: 山田太郎
     ・日時: {now_datetime}
 
+    --------------------
+    【メンション先の設定理由】
+    
     --------------------
 
     【回答・対応案】
